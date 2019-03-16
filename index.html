@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<link rel="stylesheet" href="css/bulma-0.7.2/bulma.min.css" />
+	<link rel="stylesheet" href="css/bulma-extensions.min.css" />
+	<style>
+          .draggable {
+            width: 40px;
+            height: 40px;
+            padding: 3px;
+            text-align:center;
+            margin: 3px;
+            cursor: pointer;
+            border: 1px solid #000;
+            display: inline-block;
+            vertical-align: middle;
+          }
+          .droppable {
+            width: 115px;
+            height: 115px;
+            padding: 0.5em;
+            margin: 10px;
+            border: 1px dashed #000;
+          }
+          .red-outline { border: 1px solid red; }
+
+          #answer {
+            font-size:150%;
+          }
+        </style>
+    <title>Mayan Counting</title>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>
+              <strong>Bulma</strong> by <a href="https://jgthms.com">Jeremy Thomas</a>. The source code is licensed
+              <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The website content
+              is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+            </p>
+        </div>
+    </footer>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(function(j) {
+            var the_answer = 0;
+
+            j(".modal-button").click(function() {
+                j(".modal").addClass("is-active");  
+            });
+
+            j(".modal-close").click(function() {
+                j(".modal").removeClass("is-active");
+            });
+
+            j('a[rel="external"]').click(function() {
+                window.open($(this).attr('href'));
+                return false;
+            });
+            
+            j( "#drag-blocks li" ).draggable({
+              appendTo: "body",
+              helper: "clone",
+              cursor: "move",
+              opacity: 0.5
+            });
+
+            j( ".droppable" ).droppable({
+                activeClass: "ui-state-default",
+                hoverClass: "ui-state-hover",
+                accept: ":not(.ui-sortable-helper)",
+                drop: function( event, ui ) {
+                    
+                    if ( ui.draggable.attr('value') == 1 ) {
+                        j( "<span></span>" ).html( ui.draggable.html() ).appendTo( this );
+                    } else {
+                        j( "<div></div>" ).html( ui.draggable.html() ).appendTo( this );
+                    }
+                    checkOverload( ui.draggable.attr('value') );
+                    j( this ).removeClass( "ui-state-default" );
+                    //alert(tally);
+                }
+            });
+
+            j("a#reset-answers").click(function() {
+                j("div.answer").empty().removeClass('red-outline');
+            });
+
+            function checkOverload( dragId ) {
+                //Count total number of child elements in it.
+                let onesTotal = 0;
+                let onesLimit = 4;
+                let fivesTotal = 0;
+                let fivesLimit = 3;
+                let zeroTotal = 0;
+                let zeroLimit = 1;
+                let error = "";
+
+                j("div.answer").each(function( idx ) {
+                    currentId = j(this).attr('id');
+                    onesTotal = j("#" + currentId).children().find("img.imgone").length;
+                    fivesTotal = j("#" + currentId).children().find("img.imgfive").length;
+                    zeroTotal = j("#" + currentId).children().find("img.imgtwenty").length;
+
+                    
+                    if (onesTotal > onesLimit) {
+                        error = "You exceeded the limit of ones for this box";
+                    } else if (fivesTotal > fivesLimit) {
+                        error = "You exceeded the limit of fives for this box";
+                    } else if (zeroTotal > zeroLimit) {
+                        error = "You exceeded the limit of zeros for this box";
+                    }
+
+                    //Clam can be only item in a given answer box
+                    if (zeroTotal > 0) {
+                        if (onesTotal || fivesTotal) {
+                            error = "Zero holder is only item allowed in a given box";  
+                        }
+                    }
+                    
+                    if (error.length) {
+                        j(this).addClass('red-outline').after("<p id=\"errormsg\">" + error + "</p>");
+                        j("p#errormsg").fadeOut(2500, function() {
+                            j("#" + currentId).removeClass('red-outline');
+                            j(this).remove();
+                        });
+                        j("#" + currentId + " img").filter(":last").remove();
+                        return false;
+                    }
+                    
+                    //alert("Box: " + currentId + ", One:" + onesTotal + " , Five:" + fivesTotal + " , Zero:" + zeroTotal);
+                });
+            }
+        });
+    </script>
+    <script src="/dist/build.js"></script>
+  </body>
+</html>
