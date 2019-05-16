@@ -1,5 +1,6 @@
 <template>
     <div>
+        <h3 class="title is-3 has-text-info">Contact Me</h3>
     	<div class="card">
     		<header class="card-header">
     			<p class="card-header-title">David Patricola</p>
@@ -21,10 +22,10 @@
 <script>
     export default {
         activated() {
-            console.log('Hai!');
+           // console.log('Hai!');
         },
         deactivated() {
-            console.log('Bye!');
+           // console.log('Bye!');
         }
     }
 </script>

@@ -11,9 +11,28 @@
             </div>
             <div class="column">
                 <div class="navbar-brand">
-                  <keep-alive>
-                    <appTopMenu></appTopMenu>
-                  </keep-alive>
+                  <nav class="level navbar" role="navigation" aria-label="main navigation">
+                    <div class="level-left">
+                        
+                    </div>
+                    <div class="level-right navbar-menu">
+                          <router-link tag="p" class="level-item" to="/about" exact><a>About Counting</a></router-link>
+                          <router-link tag="p" class="level-item" to="/howto" exact><a>Instructions</a></router-link>
+                          <router-link tag="p" class="level-item" to="/contact" exact><a>Contact Me</a></router-link>
+                          <template v-if="!auth.isLoggedIn">
+                            <router-link tag="p" class="level-item" to="/login" exact @click="auth.isLoggedIn = true"><a>Log In / Register</a></router-link>
+                          </template>
+                          <template v-else>
+                            <router-link tag="p" class="level-item" to="/user/profile" exact @click="auth.isLoggedIn = false"><a>My Profile</a></router-link>
+                          </template>
+                        <!--
+                        <p class="level-item"><a href="javascript://" @click.prevent="navigate('app-about','About')">About Counting</a></p>
+                        <p class="level-item"><a href="javascript://" @click.prevent="navigate('app-instructions','How To Play')">Instructions</a></p>
+                        <p class="level-item"><a href="javascript://" @click.prevent="navigate('app-contact','Contact Me')">Contact Me</a></p>
+                        <p class="level-item"><a href="javascript://" id="modal-login-button">Log In / Sign Up</a></p>
+                      -->
+                    </div>
+                  </nav>
                   <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
                     <span aria-hidden="true"></span>
                     <span aria-hidden="true"></span>
@@ -36,7 +55,9 @@
                   </div>
                   <p><small><strong>Note:</strong> You can click any button again to get a new number</small></p>
                   
-                  <div v-if="numberToGuess !== 0" v-html="numberToGuessDisplay"></div>
+                  <transition name="slide-fade">
+                    <div v-if="numberToGuess !== 0" id="numberToGuess" v-html="numberToGuessDisplay"></div>
+                  </transition>
               </div>
               <div class="column is-2">
                   <h3 class="title">Second</h3>
@@ -73,39 +94,51 @@
                   <h3 class="title">Fourth</h3>
                   <h6 class="subtitle">Submit your answer when ready.</h6>
 
-                  <a :disabled="numberToGuess < 1" class="button is-primary modal-button has-text-black" data-target="modal-ter" aria-haspopup="true" @click="verifyAnswer">Submit Answer</a>
+                  <a :disabled="numberToGuess < 1" class="button is-primary modal-answer-button has-text-black" data-target="modal-ter" aria-haspopup="true" @click="verifyAnswer">Submit Answer</a>
               </div>
               <div class="column is-4">
-                
-                  <h3 class="title is-3 has-text-info">{{ currentView.title }}</h3>
+                  <transition
+                    enter-active-class="animated fadeInRight"
+                    leave-active-class="animated fadeOutLeft"
+                    mode="out-in">
+                      <keep-alive>
+                        <router-view></router-view>
+                      </keep-alive>
+                  </transition>
+                  <!--
                   <component :is="currentView.tag"></component>
-                
-              </div> 
+                  -->
+              </div>
           </div>
       </div>
 
-      <modal
+      <modal-answer
         :userAnswer="userAnswer"
         :userMessage="userMessage"
         :userAnswerDisplay="userAnswerDisplay"
         :userStats="userStats"
-      ></modal>
+      ></modal-answer>
+
+      <modal-login></modal-login>
     </section>
   </div>
 </template>
 
 <script>
-  import Modal from './Modal.vue';
+  import ModalAnswer from './ModalAnswer.vue';
+  import ModalLogin from './ModalLogin.vue';
   import TopMenu from './TopMenu.vue';
   import About from './About.vue';
   import Contact from './Contact.vue';
   import Instructions from './Instructions.vue';
 
   import { eventBus } from './main';
+  import { authService } from './main';
 
 export default {
   components: {
-    modal: Modal,
+    modalAnswer: ModalAnswer,
+    modalLogin: ModalLogin,
     appTopMenu: TopMenu,
     appAbout: About,
     appContact: Contact,
@@ -120,6 +153,10 @@ export default {
 
       this.history = temp.concat(this.history.splice(0));
     });
+    eventBus.$on('loggedIn', (data) => {
+      this.loggedIn = data.loggedIn;
+      //console.log(this.loggedIn);
+    });
   },
   data () {
     return {
@@ -129,6 +166,8 @@ export default {
           title: 'About Mayan Counting'
         }
       ],
+      auth: authService,
+      loggedIn: false,
       activeView: 'app-about',
       numberToGuess: 0,
       range: 0,
@@ -265,6 +304,24 @@ export default {
     }
   }
 }
+
+$(function(j) {
+    j(".modal-answer-button").click(function() {
+        j(".modal-answer").addClass("is-active");  
+    });
+
+    j(".modal-answer-close, .btn-close").click(function() {
+        j(".modal-answer").removeClass("is-active");
+    });
+
+    j("#modal-login-button").click(function() {
+        j(".modal-login").addClass("is-active");  
+    });
+
+    j(".modal-login-close, .modal-close").click(function() {
+        j(".modal-login").removeClass("is-active");
+    });
+});
 </script>
 
 <style>
